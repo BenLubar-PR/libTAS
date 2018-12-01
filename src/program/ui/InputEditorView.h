@@ -56,6 +56,8 @@ public slots:
     void pasteInputs();
     void pasteInsertInputs();
 
+    void gotoFrame();
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;

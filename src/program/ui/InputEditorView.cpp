@@ -87,6 +87,8 @@ InputEditorView::InputEditorView(Context* c, QWidget *parent) : QTableView(paren
     menu->addAction(tr("Cut"), this, &InputEditorView::cutInputs);
     menu->addAction(tr("Paste"), this, &InputEditorView::pasteInputs);
     menu->addAction(tr("Paste Insert"), this, &InputEditorView::pasteInsertInputs);
+    menu->addSeparator();
+    menu->addAction(tr("Go To Frame"), this, &InputEditorView::gotoFrame);
 
     keyDialog = new KeyPressedDialog(this);
 }
@@ -349,4 +351,33 @@ void InputEditorView::pasteInsertInputs()
     QModelIndex bottom = inputEditorModel->index(index.row()+nbFrames-1, 0);
     selectionModel()->clear();
     selectionModel()->select(QItemSelection(top, bottom), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+}
+
+void InputEditorView::gotoFrame()
+{
+    const QModelIndex index = selectionModel()->currentIndex();
+
+    /* If no row was selected, return */
+    if (!index.isValid())
+        return;
+
+    if (context->framecount == index.row() - 1) {
+        /* Current frame is the goal; no-op */
+        return;
+    }
+
+    /* Set our goal frame number */
+    context->pause_frame = index.row() - 1;
+
+    if (context->framecount >= index.row()) {
+        /* Goal is in the past */
+        /* TODO */
+    }
+    else {
+        /* Goal is in the future */
+        context->config.sc.fastforward = true;
+        context->config.sc.running = true;
+        context->config.sc.recording = SharedConfig::RECORDING_READ;
+        context->config.sc_modified = true;
+    }
 }
