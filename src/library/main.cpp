@@ -33,6 +33,7 @@
 #include "checkpoint/Checkpoint.h"
 #include "audio/AudioContext.h"
 #include "encoding/AVEncoder.h"
+#include "fileio/SaveFileList.h"
 #include <unistd.h> // getpid()
 
 extern char**environ;
@@ -91,6 +92,9 @@ void __attribute__((constructor)) init(void)
             case MSGN_BASE_SAVESTATE_INDEX:
                 receiveData(&index, sizeof(int));
                 Checkpoint::setBaseSavestateIndex(index);
+                break;
+            case MSGS_SAVEFILE:
+                SaveFileList::receiveSaveFile();
                 break;
             default:
                 debuglog(LCF_ERROR | LCF_SOCKET, "Unknown socket message ", message);

@@ -28,6 +28,8 @@
 #include <vector>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "../../shared/sockethelpers.h"
+#include "../../shared/messages.h"
 
 namespace libtas {
 
@@ -35,6 +37,7 @@ SaveFile::SaveFile(const char *file) {
     filename = std::string(file);
     removed = false;
     closed = true;
+    updated = false;
     stream = nullptr;
     fd = 0;
 }
@@ -68,9 +71,12 @@ FILE* SaveFile::open(const char *modes) {
         else {
             /* File was removed and opened in write mode */
             stream = open_memstream(&stream_buffer, &stream_size);
+            updated = true;
             return stream;
         }
     }
+
+    updated = true;
 
     if (stream == nullptr) {
 
@@ -146,6 +152,7 @@ int SaveFile::open(int flags)
     if (fd != 0) {
         if (overwrite) {
             ftruncate(fd, 0);
+            updated = true;
         }
     }
     else if (removed) {
@@ -158,6 +165,7 @@ int SaveFile::open(int flags)
         else {
             /* File was removed and opened in write mode */
             fd = syscall(SYS_memfd_create, filename.c_str(), 0);
+            updated = true;
         }
     }
     else {
@@ -199,6 +207,7 @@ int SaveFile::open(int flags)
         lseek(fd, 0, SEEK_SET);
     }
 
+    updated = true;
     return fd;
 }
 
@@ -239,6 +248,7 @@ int SaveFile::remove()
     }
 
     removed = true;
+    updated = true;
 
     /* If the file wasn't closed, do nothing */
     if (!closed)
@@ -258,6 +268,38 @@ int SaveFile::remove()
     }
 
     return 0;
+}
+
+void SaveFile::sendUpdate()
+{
+    sendMessage(MSGS_SAVEFILE);
+    sendString(filename);
+    sendData(&removed, sizeof(bool));
+    if (removed)
+    {
+        return;
+    }
+    sendData(&stream_size, sizeof(size_t));
+    sendData(stream_buffer, stream_size);
+}
+
+void SaveFile::receiveUpdate()
+{
+    bool shouldRemove;
+    receiveData(&shouldRemove, sizeof(bool));
+    if (shouldRemove)
+    {
+        remove();
+        updated = false;
+        return;
+    }
+
+    std::string data(receiveString());
+
+    FILE *file = open("wb");
+    fwrite(data.c_str(), 1, data.length(), file);
+    fclose(file);
+    updated = false;
 }
 
 }

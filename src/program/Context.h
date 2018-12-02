@@ -21,6 +21,7 @@
 #define LIBTAS_CONTEXT_H_INCLUDED
 
 #include <string>
+#include <map>
 #include "Config.h"
 // #include <X11/Xlib.h>
 #include <xcb/xcb.h>
@@ -103,6 +104,17 @@ struct Context {
 
     /* MD5 hash of the game executable that is stored in the movie */
     std::string md5_movie;
+
+    /* Save files recorded from the library */
+    struct SaveFile
+    {
+        /* Data contained in the file */
+        std::string data;
+
+        /* Whether the file was deleted */
+        bool removed = false;
+    };
+    std::map<std::string, SaveFile> save_files;
 
 };
 

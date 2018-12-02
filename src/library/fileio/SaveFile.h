@@ -41,6 +41,7 @@ public:
 
     bool removed = false;
     bool closed = true;
+    bool updated = false;
 
     /* Open and return a FILE stream of the savefile */
     FILE* open(const char *modes);
@@ -53,6 +54,12 @@ public:
 
     /* Remove a savefile and return 0 for success and -1 for error (+ errno set) */
     int remove();
+
+    /* Sends an update to the program */
+    void sendUpdate();
+
+    /* Receives an update from the program */
+    void receiveUpdate();
 
 };
 

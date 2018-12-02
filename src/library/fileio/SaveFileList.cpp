@@ -31,6 +31,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <algorithm> // remove_if
+#include "../../shared/sockethelpers.h"
 
 namespace libtas {
 
@@ -239,6 +240,30 @@ bool isSaveFileRemoved(const char *file)
     }
 
     return true;
+}
+
+void sendUpdatedFiles()
+{
+    for (auto& savefile : savefiles) {
+        if (savefile->updated) {
+            savefile->updated = false;
+	    savefile->sendUpdate();
+        }
+    }
+}
+
+void receiveSaveFile()
+{
+    std::string filestr(receiveString());
+    for (auto& savefile : savefiles) {
+        if (savefile->filename.compare(filestr) == 0) {
+            savefile->receiveUpdate();
+            return;
+        }
+    }
+
+    savefiles.emplace_back(new SaveFile(filestr.c_str()));
+    savefiles.back()->receiveUpdate();
 }
 
 

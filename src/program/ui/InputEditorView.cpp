@@ -369,15 +369,20 @@ void InputEditorView::gotoFrame()
     /* Set our goal frame number */
     context->pause_frame = index.row() - 1;
 
-    if (context->framecount >= index.row()) {
-        /* Goal is in the past */
-        /* TODO */
+    if (index.row() == 1) {
+        /* Goal is first frame */
+        context->config.sc.running = false;
     }
     else {
         /* Goal is in the future */
         context->config.sc.fastforward = true;
         context->config.sc.running = true;
         context->config.sc.recording = SharedConfig::RECORDING_READ;
-        context->config.sc_modified = true;
     }
+
+    if (context->framecount >= index.row()) {
+        /* Goal is in the past */
+    }
+
+    context->config.sc_modified = true;
 }
