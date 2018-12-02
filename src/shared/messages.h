@@ -208,6 +208,14 @@ enum {
      * Argument: size_t (string length) then char[len]
      */
     MSGN_RAMWATCH,
+
+    /*
+     * Send the current state of a save file to the program or the game
+     * Arguments: size_t (filename length), char[len] (filename), bool (removed)
+     * If the file is not removed, additional arguments are sent:
+     * size_t (file length) then char[len] (contents)
+     */
+    MSGS_SAVEFILE,
 };
 
 #endif

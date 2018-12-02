@@ -34,6 +34,7 @@
 #include "threadwrappers.h" // isMainThread()
 #include "checkpoint/ThreadManager.h"
 #include "checkpoint/Checkpoint.h"
+#include "fileio/SaveFileList.h"
 #include "ScreenCapture.h"
 #include "WindowTitle.h"
 #include "EventQueue.h"
@@ -223,6 +224,9 @@ void frameBoundary(bool drawFB, std::function<void()> draw, bool restore_screen)
     sendMessage(MSGB_FPS);
     sendData(&fps, sizeof(float));
     sendData(&lfps, sizeof(float));
+
+    /* Send changed save files */
+    SaveFileList::sendUpdatedFiles();
 
     /* Last message to send */
     sendMessage(MSGB_START_FRAMEBOUNDARY);

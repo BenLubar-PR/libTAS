@@ -60,6 +60,12 @@ int getSaveFileFd(const char *file);
 /* Get if savefile was removed */
 bool isSaveFileRemoved(const char *file);
 
+/* Send changed save files to the program */
+void sendUpdatedFiles();
+
+/* Receive a save file from the program */
+void receiveSaveFile();
+
 }
 
 }

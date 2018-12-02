@@ -400,6 +400,18 @@ void GameLoop::initProcessMessages()
         }
     }
 
+    /* Send any save files we held onto */
+    for (const auto& file : context->save_files)
+    {
+        sendMessage(MSGS_SAVEFILE);
+        sendString(file.first);
+        sendData(&file.second.removed, sizeof(bool));
+        if (!file.second.removed)
+        {
+            sendString(file.second.data);
+        }
+    }
+
     /* End message */
     sendMessage(MSGN_END_INIT);
 }
@@ -411,6 +423,8 @@ bool GameLoop::startFrameMessages()
 
     while (message != MSGB_START_FRAMEBOUNDARY) {
         float fps, lfps;
+        std::string filename;
+	Context::SaveFile *file;
         switch (message) {
         case MSGB_WINDOW_ID:
             receiveData(&context->game_window, sizeof(Window));
@@ -455,6 +469,18 @@ bool GameLoop::startFrameMessages()
             break;
         case MSGB_QUIT:
             return true;
+        case MSGS_SAVEFILE:
+            filename = receiveString();
+            file = &context->save_files[filename];
+            receiveData(&file->removed, sizeof(bool));
+
+            if (file->removed) {
+                file->data.clear();
+            } else {
+                file->data = receiveString();
+            }
+
+            break;
         default:
             std::cerr << "Got unknown message!!!" << std::endl;
             return true;
@@ -1331,6 +1357,9 @@ void GameLoop::loopExit()
 
     /* Remove savestates because they are invalid on future instances of the game */
     remove_savestates(context);
+
+    /* Delete cached saved files */
+    context->save_files.clear();
 
     context->status = Context::INACTIVE;
     emit statusChanged();
