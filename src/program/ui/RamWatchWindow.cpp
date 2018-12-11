@@ -23,6 +23,7 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
+#include "../ramsearch/RamWatchDetailed.h"
 #include "RamWatchWindow.h"
 
 RamWatchWindow::RamWatchWindow(Context* c, QWidget *parent, Qt::WindowFlags flags) : QDialog(parent, flags), context(c)
@@ -55,11 +56,15 @@ RamWatchWindow::RamWatchWindow(Context* c, QWidget *parent, Qt::WindowFlags flag
     QPushButton *scanWatch = new QPushButton(tr("Scan Pointer"));
     connect(scanWatch, &QAbstractButton::clicked, this, &RamWatchWindow::slotScanPointer);
 
+    QPushButton *tobyWatch = new QPushButton(tr("Toby"));
+    connect(tobyWatch, &QAbstractButton::clicked, this, &RamWatchWindow::slotToby);
+
     QDialogButtonBox *buttonBox = new QDialogButtonBox();
     buttonBox->addButton(addWatch, QDialogButtonBox::ActionRole);
     buttonBox->addButton(editWatch, QDialogButtonBox::ActionRole);
     buttonBox->addButton(removeWatch, QDialogButtonBox::ActionRole);
     buttonBox->addButton(scanWatch, QDialogButtonBox::ActionRole);
+    buttonBox->addButton(tobyWatch, QDialogButtonBox::ActionRole);
 
     /* Create the main layout */
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -155,4 +160,27 @@ void RamWatchWindow::slotScanPointer()
     /* Fill and show the watch edit window */
     pointerScanWindow->addressInput->setText(QString("%1").arg(ramWatchModel->ramwatches.at(row)->address, 0, 16));
     pointerScanWindow->exec();
+}
+
+void RamWatchWindow::slotToby()
+{
+    while (!ramWatchModel->ramwatches.empty()) {
+        ramWatchModel->removeWatch(0);
+    }
+    for (int i = 0; i < 17; i++) {
+        auto watch = new RamWatchDetailed<unsigned int>(i * 4 + 0xb459e0);
+        watch->isPointer = false;
+        watch->base_address = 0;
+        watch->game_pid = context->game_pid;
+        watch->hex = true;
+        watch->label = "RNG ";
+        if (i < 10) {
+            watch->label += char('0' + i);
+        } else if (i < 16) {
+            watch->label += char('A' + i - 10);
+        } else {
+            watch->label += "offset";
+        }
+        ramWatchModel->addWatch(std::unique_ptr<RamWatchDetailed<unsigned int>>(watch));
+    }
 }
