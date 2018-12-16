@@ -170,7 +170,7 @@ bool ThreadManager::initThread(ThreadInfo* thread, void * (* start_routine) (voi
     thread->initial_native = GlobalState::isNative();
     thread->initial_owncode = GlobalState::isOwnCode();
     thread->initial_nolog = GlobalState::isNoLog();
-    thread->initial_ticks = detTimer.ticks;
+    thread->initial_ticks = DeterministicTimer::ticks;
 
     if (!isRecycled) {
         thread->pthread_id = 0;
@@ -200,7 +200,7 @@ void ThreadManager::update(ThreadInfo* thread)
     if (thread->initial_native) GlobalState::setNative(true);
     if (thread->initial_owncode) GlobalState::setOwnCode(true);
     if (thread->initial_nolog) GlobalState::setNoLog(true);
-    detTimer.ticks = thread->initial_ticks;
+    DeterministicTimer::ticks = thread->initial_ticks;
 
     current_thread = thread;
     addToList(thread);
