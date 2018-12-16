@@ -90,7 +90,7 @@ private:
     unsigned int fractional_part;
 
     /* State of the deterministic timer */
-    TimeHolder ticks;
+    static thread_local TimeHolder ticks;
 
     /*
      * Extra ticks to add to GetTicks().
@@ -118,6 +118,9 @@ private:
 
     /* Mutex to protect access to the ticks value */
     std::mutex mutex;
+
+    /* allow access to ticks field */
+    friend class ThreadManager;
 };
 
 extern DeterministicTimer detTimer;
