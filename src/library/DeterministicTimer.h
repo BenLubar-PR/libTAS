@@ -89,9 +89,6 @@ private:
     /* Current sum of all fractional increments */
     unsigned int fractional_part;
 
-    /* State of the deterministic timer */
-    static thread_local TimeHolder ticks;
-
     /*
      * Extra ticks to add to GetTicks().
      * Required for very specific situations.

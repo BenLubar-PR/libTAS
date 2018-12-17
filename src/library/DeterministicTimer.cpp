@@ -104,7 +104,7 @@ struct timespec DeterministicTimer::getTicks(SharedConfig::TimeCallType type)
         addDelay(delay);
     }
 
-    TimeHolder fakeTicks = ticks + fakeExtraTicks;
+    TimeHolder fakeTicks = ThreadManager::currentTicks() + fakeExtraTicks;
     return fakeTicks;
 }
 
@@ -130,7 +130,7 @@ void DeterministicTimer::addDelay(struct timespec delayTicks)
         std::lock_guard<std::mutex> lock(mutex);
 
         addedDelay += delayTicks;
-        ticks += delayTicks;
+        ThreadManager::currentTicks() += delayTicks;
     }
 
     if(!shared_config.fastforward)
@@ -237,7 +237,7 @@ void DeterministicTimer::enterFrameBoundary()
      */
     if (timeIncrement > addedDelay) {
         TimeHolder deltaTicks = timeIncrement - addedDelay;
-        ticks += deltaTicks;
+        ThreadManager::currentTicks() += deltaTicks;
         debuglog(LCF_TIMESET, __func__, " added ", deltaTicks.tv_sec * 1000000000 + deltaTicks.tv_nsec, " nsec");
         addedDelay = {0, 0};
     }
@@ -257,8 +257,6 @@ void DeterministicTimer::fakeAdvanceTimer(struct timespec extraTicks) {
 
 void DeterministicTimer::initialize(void)
 {
-    ticks = shared_config.initial_time;
-
     if (shared_config.framerate_num > 0) {
         baseTimeIncrement.tv_sec = shared_config.framerate_den / shared_config.framerate_num;
         baseTimeIncrement.tv_nsec = 1000000000 * (uint64_t)(shared_config.framerate_den % shared_config.framerate_num) / shared_config.framerate_num;

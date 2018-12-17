@@ -29,6 +29,7 @@
 #include <condition_variable>
 #include <setjmp.h>
 
+#include "../TimeHolder.h"
 #include "ThreadLocalStorage.h"
 
 namespace libtas {
@@ -66,7 +67,8 @@ struct ThreadInfo {
     bool initial_native = false; // initial value of the global native state
     bool initial_owncode = false; // initial value of the global owncode state
     bool initial_nolog = false; // initial value of the global nolog state
-    struct timespec initial_ticks = {0, 0};
+
+    TimeHolder ticks; // current time for this thread
 
     stack_t altstack = {nullptr, 0, 0}; // altstack to be used when suspending threads
 

@@ -129,6 +129,10 @@ public:
       current_thread = thread;
     }
 
+    static TimeHolder& currentTicks() {
+        return current_thread->ticks;
+    }
+
 };
 }
 
