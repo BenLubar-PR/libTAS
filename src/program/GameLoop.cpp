@@ -191,6 +191,8 @@ void GameLoop::start()
     init();
     initProcessMessages();
 
+    bool doubleFrameAdvance = false;
+
     while (1)
     {
         bool exitMsg = startFrameMessages();
@@ -203,8 +205,9 @@ void GameLoop::start()
 
         /* We are at a frame boundary */
         /* If we did not yet receive the game window id, just make the game running */
-        bool endInnerLoop = false;
-        if (context->game_window ) do {
+        bool endInnerLoop = doubleFrameAdvance;
+        doubleFrameAdvance = false;
+        if (context->game_window ) while (!endInnerLoop) {
 
             /* Check if game is still running */
             int ret = waitpid(context->game_pid, nullptr, WNOHANG);
@@ -228,7 +231,7 @@ void GameLoop::start()
 
             bool hasFrameAdvanced = false;
             if (eventType) {
-                hasFrameAdvanced = processEvent(eventType, hk);
+                doubleFrameAdvance = hasFrameAdvanced = processEvent(eventType, hk);
             }
 
             endInnerLoop = context->config.sc.running || ar_advance || hasFrameAdvanced;
@@ -236,7 +239,7 @@ void GameLoop::start()
             if (!endInnerLoop) {
                 sleepSendPreview();
             }
-        } while (!endInnerLoop);
+        }
 
         AllInputs ai;
         processInputs(ai);
